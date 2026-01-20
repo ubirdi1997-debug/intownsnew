@@ -355,6 +355,104 @@ const AdminDashboard = () => {
     }
   };
 
+  const createCategory = async () => {
+    if (!categoryForm.name) {
+      toast.error('Please enter category name');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API_URL}/categories`,
+        categoryForm,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success('Category created successfully');
+      setShowCategoryDialog(false);
+      setCategoryForm({ name: '', image: '', description: '', parent_id: '', level: 1 });
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to create category');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteCategory = async (categoryId) => {
+    if (!confirm('Are you sure you want to delete this category?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(
+        `${API_URL}/admin/categories/${categoryId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('Category deleted');
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete category');
+    }
+  };
+
+  const createProduct = async () => {
+    if (!productForm.name || !productForm.price || !productForm.category_id) {
+      toast.error('Please fill required fields (name, price, category)');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const data = {
+        ...productForm,
+        price: parseInt(productForm.price) * 100 // Convert to paise
+      };
+
+      await axios.post(
+        `${API_URL}/products`,
+        data,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success('Product created successfully');
+      setShowProductDialog(false);
+      setProductForm({
+        name: '',
+        description: '',
+        price: '',
+        duration: '',
+        category_id: '',
+        sub_category_id: '',
+        type: 'product',
+        image: ''
+      });
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to create product');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProduct = async (productId) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(
+        `${API_URL}/admin/products/${productId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('Product deleted');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to delete product');
+    }
+  };
+
   if (!stats) {
     return (
       <div className="flex items-center justify-center min-h-screen">
