@@ -365,12 +365,26 @@ async def get_wallet_config():
 
 # ============= Email Helper Functions =============
 
-async def send_system_email(to_email: str, subject: str, message: str, cc_email: str = None):
+async def send_system_email(to_email: str, subject: str, message: str, cc_email: str = None, email_type: str = "system"):
     """
     Send email via Mailtrap or log if not configured
+    Also logs to database for analytics
     """
     mailtrap_token = os.environ.get('MAILTRAP_API_TOKEN')
     sender_email = os.environ.get('MAILTRAP_SENDER_EMAIL', 'admin@intowns.in')
+    
+    # Log email to database
+    email_log = EmailLog(
+        to_email=to_email,
+        cc_email=cc_email,
+        subject=subject,
+        message=message,
+        type=email_type,
+        status="sent"
+    )
+    email_data = email_log.model_dump()
+    email_data['created_at'] = email_data['created_at'].isoformat()
+    await db.email_logs.insert_one(email_data)
     
     if not mailtrap_token or not mailtrap_token.strip():
         # Log email if Mailtrap not configured
