@@ -1052,6 +1052,7 @@ async def verify_payment(req: VerifyPaymentRequest, user: dict = Depends(get_cur
     # Auto-assign professional
     professionals = await db.professionals.find({'status': 'active'}, {'_id': 0}).to_list(100)
     professional_id = professionals[0]['id'] if professionals else None
+    professional_name = professionals[0]['name'] if professionals else None
     
     await db.bookings.update_one(
         {'id': req.booking_id},
@@ -1061,6 +1062,30 @@ async def verify_payment(req: VerifyPaymentRequest, user: dict = Depends(get_cur
             'status': 'accepted',
             'professional_id': professional_id
         }}
+    )
+    
+    # Get booking details for email
+    updated_booking = await db.bookings.find_one({'id': req.booking_id}, {'_id': 0})
+    product = await db.products.find_one({'id': updated_booking['product_id']}, {'_id': 0})
+    
+    # Send order success email to customer
+    await send_order_success_email(
+        user['email'],
+        user['name'],
+        req.booking_id,
+        product['name'],
+        updated_booking['amount'],
+        updated_booking['address']
+    )
+    
+    # Send new order notification to admin and professional
+    await send_new_order_notification(
+        req.booking_id,
+        user['name'],
+        product['name'],
+        updated_booking['amount'],
+        updated_booking['address'],
+        professional_name
     )
     
     return {'success': True, 'booking_id': req.booking_id}
