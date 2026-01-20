@@ -1533,26 +1533,57 @@ async def send_email(email_req: EmailRequest):
     Send email via Mailtrap or configured email service
     For now, just logs the email (implement Mailtrap integration later)
     """
-    mailtrap_token = os.environ.get('MAILTRAP_API_TOKEN')
-    
-    if not mailtrap_token:
-        # Log email instead if Mailtrap not configured
-        logger.info(f"Email would be sent to: {email_req.to_emails}")
-        logger.info(f"Subject: {email_req.subject}")
-        logger.info(f"Message: {email_req.message}")
+    try:
+        for to_email in email_req.to_emails:
+            await send_system_email(
+                to_email,
+                email_req.subject,
+                email_req.message,
+                email_type="manual"
+            )
         
         return {
             'success': True,
-            'message': 'Email logged (Mailtrap not configured)',
+            'message': f'Email sent to {len(email_req.to_emails)} recipients',
             'recipients': len(email_req.to_emails)
         }
+    except Exception as e:
+        logger.error(f"Email send error: {str(e)}")
+        return {
+            'success': False,
+            'message': f'Failed to send email: {str(e)}',
+            'recipients': 0
+        }
+
+@api_router.get("/admin/email-logs", dependencies=[Depends(require_admin)])
+async def get_email_logs(limit: int = 50):
+    """Get email logs for analytics"""
+    logs = await db.email_logs.find({}, {'_id': 0}).sort('created_at', -1).limit(limit).to_list(limit)
     
-    # TODO: Implement actual Mailtrap API call
-    # For now, return success
+    # Get stats
+    total_sent = await db.email_logs.count_documents({'status': 'sent'})
+    total_failed = await db.email_logs.count_documents({'status': 'failed'})
+    
+    # Count by type
+    welcome_count = await db.email_logs.count_documents({'type': 'welcome'})
+    topup_count = await db.email_logs.count_documents({'type': 'topup'})
+    order_count = await db.email_logs.count_documents({'type': 'order_success'})
+    notification_count = await db.email_logs.count_documents({'type': 'order_notification'})
+    manual_count = await db.email_logs.count_documents({'type': 'manual'})
+    
     return {
-        'success': True,
-        'message': f'Email sent to {len(email_req.to_emails)} recipients',
-        'recipients': len(email_req.to_emails)
+        'logs': logs,
+        'stats': {
+            'total_sent': total_sent,
+            'total_failed': total_failed,
+            'by_type': {
+                'welcome': welcome_count,
+                'topup': topup_count,
+                'order_success': order_count,
+                'order_notification': notification_count,
+                'manual': manual_count
+            }
+        }
     }
 
 @api_router.get("/")
