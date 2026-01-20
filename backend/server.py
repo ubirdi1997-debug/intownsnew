@@ -453,7 +453,7 @@ Thank you for choosing Intowns.in!
 Best regards,
 Intowns.in Team
     """
-    await send_system_email(user_email, subject, message)
+    await send_system_email(user_email, subject, message, email_type="topup")
 
 async def send_order_success_email(user_email: str, user_name: str, booking_id: str, product_name: str, amount: int, address: str):
     """Send order success email to customer"""
@@ -481,7 +481,7 @@ Thank you for booking with Intowns.in!
 Best regards,
 Intowns.in Team
     """
-    await send_system_email(user_email, subject, message)
+    await send_system_email(user_email, subject, message, email_type="order_success")
 
 async def send_new_order_notification(booking_id: str, customer_name: str, product_name: str, amount: int, address: str, professional_name: str = None):
     """Send new order notification to admin and professional"""
@@ -513,7 +513,7 @@ Intowns.in Admin System
     """
     
     # Send to admin
-    await send_system_email("admin@intowns.in", subject, message, "admin@usafe.in")
+    await send_system_email("admin@intowns.in", subject, message, "admin@usafe.in", email_type="order_notification")
 
 # ============= Auth Routes =============
 
