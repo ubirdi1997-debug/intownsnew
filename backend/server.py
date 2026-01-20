@@ -875,6 +875,14 @@ async def verify_topup(
         razorpay_payment_id
     )
     
+    # Send topup confirmation email
+    await send_wallet_topup_email(
+        user['email'],
+        user['name'],
+        offer['amount'],
+        cashback
+    )
+    
     return {'success': True, 'balance': user.get('wallet_balance', 0) + total_credit}
 
 @api_router.get("/wallet/config", dependencies=[Depends(require_admin)])
