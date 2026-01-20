@@ -95,12 +95,16 @@ const AdminDashboard = () => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [statsRes, couponsRes, offersRes, configRes, blogsRes] = await Promise.all([
+      const [statsRes, couponsRes, offersRes, configRes, blogsRes, usersRes, productsRes, categoriesRes, bookingsRes] = await Promise.all([
         axios.get(`${API_URL}/admin/stats`, { headers }),
         axios.get(`${API_URL}/coupons`, { headers }),
         axios.get(`${API_URL}/wallet/offers`),
         axios.get(`${API_URL}/wallet/config`, { headers }),
-        axios.get(`${API_URL}/blog?published_only=false`, { headers })
+        axios.get(`${API_URL}/blog?published_only=false`, { headers }),
+        axios.get(`${API_URL}/admin/users`, { headers }),
+        axios.get(`${API_URL}/admin/products`, { headers }),
+        axios.get(`${API_URL}/admin/categories`, { headers }),
+        axios.get(`${API_URL}/admin/bookings`, { headers })
       ]);
 
       setStats(statsRes.data);
@@ -108,6 +112,10 @@ const AdminDashboard = () => {
       setWalletOffers(offersRes.data);
       setWalletConfig(configRes.data);
       setBlogPosts(blogsRes.data);
+      setUsers(usersRes.data.users || usersRes.data);
+      setProducts(productsRes.data);
+      setCategories(categoriesRes.data);
+      setBookings(bookingsRes.data.bookings || bookingsRes.data);
     } catch (error) {
       console.error('Failed to fetch data:', error);
       toast.error('Failed to load dashboard data');
