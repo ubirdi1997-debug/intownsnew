@@ -7,6 +7,7 @@ import BookingConfirmation from './pages/BookingConfirmation';
 import UserBookings from './pages/UserBookings';
 import AdminDashboard from './pages/AdminDashboard';
 import ProfessionalDashboard from './pages/ProfessionalDashboard';
+import WalletPage from './pages/WalletPage';
 import './App.css';
 
 const GOOGLE_CLIENT_ID = '860163349495-dft8tg560fa5jmvs3kr255cn0g1gso70.apps.googleusercontent.com';
