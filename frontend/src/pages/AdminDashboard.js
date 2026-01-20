@@ -74,6 +74,25 @@ const AdminDashboard = () => {
     message: ''
   });
 
+  const [categoryForm, setCategoryForm] = useState({
+    name: '',
+    image: '',
+    description: '',
+    parent_id: '',
+    level: 1
+  });
+
+  const [productForm, setProductForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    duration: '',
+    category_id: '',
+    sub_category_id: '',
+    type: 'product',
+    image: ''
+  });
+
   const [showCouponDialog, setShowCouponDialog] = useState(false);
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showBlogDialog, setShowBlogDialog] = useState(false);
