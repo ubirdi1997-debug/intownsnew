@@ -7,9 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Home, User, Calendar, Wallet, Menu, Sparkles, Clock, MapPin } from 'lucide-react';
+import { Home, User, Calendar, Wallet, Menu, Sparkles, Clock, MapPin, Star, Shield, Heart, Zap, Mail, Phone, Facebook, Instagram, Twitter } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRazorpay } from 'react-razorpay';
+import PWAInstallPrompt from '../components/PWAInstallPrompt';
+import WhatsAppButton from '../components/WhatsAppButton';
+import CookieConsent from '../components/CookieConsent';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
