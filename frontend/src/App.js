@@ -30,6 +30,9 @@ function App() {
           <div className="App">
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/wallet" element={
+                <ProtectedRoute><WalletPage /></ProtectedRoute>
+              } />
               <Route path="/booking-confirmation" element={
                 <ProtectedRoute><BookingConfirmation /></ProtectedRoute>
               } />
