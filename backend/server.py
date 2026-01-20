@@ -429,7 +429,7 @@ Questions? WhatsApp us at +91 91155 03663
 Best regards,
 Intowns.in Team
     """
-    await send_system_email(user_email, subject, message)
+    await send_system_email(user_email, subject, message, email_type="welcome")
 
 async def send_wallet_topup_email(user_email: str, user_name: str, amount: int, cashback: int):
     """Send wallet topup confirmation email"""
