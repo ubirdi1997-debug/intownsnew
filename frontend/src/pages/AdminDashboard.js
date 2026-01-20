@@ -35,6 +35,10 @@ const AdminDashboard = () => {
   const [walletConfig, setWalletConfig] = useState(null);
   const [blogPosts, setBlogPosts] = useState([]);
   const [siteConfig, setSiteConfig] = useState({});
+  const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [bookings, setBookings] = useState([]);
   
   // Form states
   const [couponForm, setCouponForm] = useState({
