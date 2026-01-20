@@ -31,6 +31,8 @@ const HomePage = () => {
   const [landmark, setLandmark] = useState('');
   const [pincode, setPincode] = useState('');
   const [showAddressDialog, setShowAddressDialog] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   
   // Coupon & Wallet
   const [couponCode, setCouponCode] = useState('');
