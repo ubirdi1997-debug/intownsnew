@@ -289,6 +289,51 @@ const AdminDashboard = () => {
     }
   };
 
+  const sendEmail = async () => {
+    if (!emailForm.to_emails || !emailForm.subject || !emailForm.message) {
+      toast.error('Please fill all email fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const emailsArray = emailForm.to_emails.split(',').map(e => e.trim()).filter(e => e);
+      
+      await axios.post(
+        `${API_URL}/admin/send-email`,
+        {
+          to_emails: emailsArray,
+          subject: emailForm.subject,
+          message: emailForm.message
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(`Email sent to ${emailsArray.length} recipient(s)`);
+      setEmailForm({ to_emails: '', subject: '', message: '' });
+    } catch (error) {
+      toast.error('Failed to send email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUserRole = async (userId, newRole) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(
+        `${API_URL}/admin/users/${userId}/role?role=${newRole}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('User role updated');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to update user role');
+    }
+  };
+
   if (!stats) {
     return (
       <div className="flex items-center justify-center min-h-screen">
