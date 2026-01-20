@@ -184,6 +184,17 @@ class SiteConfig(BaseModel):
     value: Any
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class EmailLog(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    to_email: str
+    cc_email: Optional[str] = None
+    subject: str
+    message: str
+    type: str  # welcome, topup, order_success, order_notification, manual
+    status: str = "sent"  # sent, failed
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============= Input Models =============
 
 class UsernamePasswordLogin(BaseModel):
