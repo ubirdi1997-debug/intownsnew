@@ -352,6 +352,144 @@ async def get_wallet_config():
         return default_config
     return WalletConfig(**config)
 
+# ============= Email Helper Functions =============
+
+async def send_system_email(to_email: str, subject: str, message: str, cc_email: str = None):
+    """
+    Send email via Mailtrap or log if not configured
+    """
+    mailtrap_token = os.environ.get('MAILTRAP_API_TOKEN')
+    sender_email = os.environ.get('MAILTRAP_SENDER_EMAIL', 'admin@intowns.in')
+    
+    if not mailtrap_token or not mailtrap_token.strip():
+        # Log email if Mailtrap not configured
+        logger.info("=" * 50)
+        logger.info("EMAIL WOULD BE SENT:")
+        logger.info(f"To: {to_email}")
+        if cc_email:
+            logger.info(f"CC: {cc_email}")
+        logger.info(f"Subject: {subject}")
+        logger.info(f"Message:\n{message}")
+        logger.info("=" * 50)
+        return
+    
+    # TODO: Implement actual Mailtrap API call when token is configured
+    # For now, just log
+    logger.info(f"Email queued: {subject} -> {to_email}")
+
+async def send_welcome_email(user_email: str, user_name: str, bonus_amount: int):
+    """Send welcome email to new user"""
+    subject = "Welcome to Intowns.in - Your Home Spa Partner!"
+    message = f"""
+Hello {user_name},
+
+Welcome to Intowns.in! 🎉
+
+We're thrilled to have you join our community of wellness enthusiasts.
+
+🎁 WELCOME BONUS: ₹{bonus_amount/100} has been credited to your wallet!
+   - Usable on orders ≥ ₹200
+   - Valid for your first booking
+
+What's Next?
+✓ Browse 50+ spa & massage services
+✓ Book professional therapists
+✓ Get services at your doorstep
+✓ Enjoy premium quality at home
+
+Start exploring: https://intowns.in
+
+Questions? WhatsApp us at +91 91155 03663
+
+Best regards,
+Intowns.in Team
+    """
+    await send_system_email(user_email, subject, message)
+
+async def send_wallet_topup_email(user_email: str, user_name: str, amount: int, cashback: int):
+    """Send wallet topup confirmation email"""
+    subject = "Wallet Topup Successful - Intowns.in"
+    message = f"""
+Hi {user_name},
+
+Your wallet has been successfully recharged! 💰
+
+Topup Details:
+- Amount Added: ₹{amount/100}
+- Cashback: ₹{cashback/100}
+- Total Credit: ₹{(amount + cashback)/100}
+
+Your wallet is now ready to use for booking services.
+
+View Wallet: https://intowns.in/wallet
+
+Thank you for choosing Intowns.in!
+
+Best regards,
+Intowns.in Team
+    """
+    await send_system_email(user_email, subject, message)
+
+async def send_order_success_email(user_email: str, user_name: str, booking_id: str, product_name: str, amount: int, address: str):
+    """Send order success email to customer"""
+    subject = f"Booking Confirmed - {product_name}"
+    message = f"""
+Hi {user_name},
+
+Your booking has been confirmed! 🎊
+
+Booking Details:
+- Booking ID: {booking_id[:8]}
+- Service: {product_name}
+- Amount Paid: ₹{amount/100}
+- Location: {address}
+
+What's Next?
+✓ Our professional will contact you shortly
+✓ Track your booking at: https://intowns.in/my-bookings
+✓ Service will be delivered at your address
+
+Need help? WhatsApp us at +91 91155 03663
+
+Thank you for booking with Intowns.in!
+
+Best regards,
+Intowns.in Team
+    """
+    await send_system_email(user_email, subject, message)
+
+async def send_new_order_notification(booking_id: str, customer_name: str, product_name: str, amount: int, address: str, professional_name: str = None):
+    """Send new order notification to admin and professional"""
+    subject = f"New Booking - {product_name}"
+    message = f"""
+NEW BOOKING ALERT 🔔
+
+Booking Details:
+- Booking ID: {booking_id[:8]}
+- Customer: {customer_name}
+- Service: {product_name}
+- Amount: ₹{amount/100}
+- Address: {address}
+"""
+    
+    if professional_name:
+        message += f"\nAssigned To: {professional_name}\n"
+    
+    message += f"""
+View Details: https://intowns.in/admin
+
+Action Required:
+- Confirm booking with customer
+- Coordinate service delivery
+- Update booking status
+
+--
+Intowns.in Admin System
+    """
+    
+    # Send to admin
+    await send_system_email("admin@intowns.in", subject, message, "admin@usafe.in")
+
 # ============= Auth Routes =============
 
 @api_router.post("/auth/login")
