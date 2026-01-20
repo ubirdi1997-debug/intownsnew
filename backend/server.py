@@ -1354,7 +1354,6 @@ async def send_email(email_req: EmailRequest):
 
 @api_router.get("/")
 async def root():
-async def root():
     return {"message": "Intowns API"}
 
 app.include_router(api_router)
