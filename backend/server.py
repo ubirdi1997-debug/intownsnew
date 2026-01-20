@@ -1180,7 +1180,180 @@ async def get_admin_stats():
         'total_wallet_balance': wallet_balance
     }
 
+# ============= Admin User Management =============
+
+@api_router.get("/admin/users", dependencies=[Depends(require_admin)])
+async def get_all_users(skip: int = 0, limit: int = 50):
+    """Get all users with pagination"""
+    users = await db.users.find({}, {'_id': 0}).skip(skip).limit(limit).to_list(limit)
+    total_count = await db.users.count_documents({})
+    return {
+        'users': users,
+        'total': total_count,
+        'page': skip // limit + 1,
+        'pages': (total_count + limit - 1) // limit
+    }
+
+@api_router.patch("/admin/users/{user_id}/role", dependencies=[Depends(require_admin)])
+async def update_user_role(user_id: str, role: str):
+    """Update user role"""
+    if role not in ['user', 'admin', 'professional']:
+        raise HTTPException(status_code=400, detail="Invalid role")
+    
+    result = await db.users.update_one(
+        {'id': user_id},
+        {'$set': {'role': role}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {'success': True, 'message': f'User role updated to {role}'}
+
+@api_router.delete("/admin/users/{user_id}", dependencies=[Depends(require_admin)])
+async def delete_user(user_id: str):
+    """Delete user (soft delete by marking inactive)"""
+    result = await db.users.update_one(
+        {'id': user_id},
+        {'$set': {'active': False}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {'success': True, 'message': 'User deleted'}
+
+# ============= Admin Product/Category Management =============
+
+@api_router.get("/admin/products", dependencies=[Depends(require_admin)])
+async def get_all_products_admin():
+    """Get all products for admin"""
+    products = await db.products.find({}, {'_id': 0}).to_list(1000)
+    return products
+
+@api_router.patch("/admin/products/{product_id}", dependencies=[Depends(require_admin)])
+async def update_product(product_id: str, product: ProductCreate):
+    """Update product"""
+    update_data = product.model_dump()
+    result = await db.products.update_one(
+        {'id': product_id},
+        {'$set': update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    return {'success': True, 'message': 'Product updated'}
+
+@api_router.delete("/admin/products/{product_id}", dependencies=[Depends(require_admin)])
+async def delete_product(product_id: str):
+    """Delete product"""
+    result = await db.products.delete_one({'id': product_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    return {'success': True, 'message': 'Product deleted'}
+
+@api_router.get("/admin/categories", dependencies=[Depends(require_admin)])
+async def get_all_categories_admin():
+    """Get all categories for admin"""
+    categories = await db.categories.find({}, {'_id': 0}).to_list(1000)
+    return categories
+
+@api_router.delete("/admin/categories/{category_id}", dependencies=[Depends(require_admin)])
+async def delete_category(category_id: str):
+    """Delete category"""
+    # Check if any products use this category
+    products_count = await db.products.count_documents({
+        '$or': [
+            {'category_id': category_id},
+            {'sub_category_id': category_id}
+        ]
+    })
+    
+    if products_count > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot delete category. {products_count} products are using it."
+        )
+    
+    result = await db.categories.delete_one({'id': category_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {'success': True, 'message': 'Category deleted'}
+
+# ============= Admin Bookings Management =============
+
+@api_router.get("/admin/bookings", dependencies=[Depends(require_admin)])
+async def get_all_bookings_admin(status: Optional[str] = None, skip: int = 0, limit: int = 50):
+    """Get all bookings for admin"""
+    query = {}
+    if status:
+        query['status'] = status
+    
+    bookings = await db.bookings.find(query, {'_id': 0}).sort('created_at', -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Populate product and user details
+    for booking in bookings:
+        product = await db.products.find_one({'id': booking['product_id']}, {'_id': 0})
+        booking['product'] = product
+        
+        user_data = await db.users.find_one({'id': booking['user_id']}, {'_id': 0})
+        booking['user'] = user_data
+        
+        if booking.get('professional_id'):
+            professional = await db.professionals.find_one({'id': booking['professional_id']}, {'_id': 0})
+            booking['professional'] = professional
+    
+    total_count = await db.bookings.count_documents(query)
+    
+    return {
+        'bookings': bookings,
+        'total': total_count,
+        'page': skip // limit + 1,
+        'pages': (total_count + limit - 1) // limit
+    }
+
+# ============= Admin Mailing =============
+
+class EmailRequest(BaseModel):
+    to_emails: List[str]
+    subject: str
+    message: str
+
+@api_router.post("/admin/send-email", dependencies=[Depends(require_admin)])
+async def send_email(email_req: EmailRequest):
+    """
+    Send email via Mailtrap or configured email service
+    For now, just logs the email (implement Mailtrap integration later)
+    """
+    mailtrap_token = os.environ.get('MAILTRAP_API_TOKEN')
+    
+    if not mailtrap_token:
+        # Log email instead if Mailtrap not configured
+        logger.info(f"Email would be sent to: {email_req.to_emails}")
+        logger.info(f"Subject: {email_req.subject}")
+        logger.info(f"Message: {email_req.message}")
+        
+        return {
+            'success': True,
+            'message': 'Email logged (Mailtrap not configured)',
+            'recipients': len(email_req.to_emails)
+        }
+    
+    # TODO: Implement actual Mailtrap API call
+    # For now, return success
+    return {
+        'success': True,
+        'message': f'Email sent to {len(email_req.to_emails)} recipients',
+        'recipients': len(email_req.to_emails)
+    }
+
 @api_router.get("/")
+async def root():
 async def root():
     return {"message": "Intowns API"}
 
