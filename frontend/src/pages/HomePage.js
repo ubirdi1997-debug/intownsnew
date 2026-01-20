@@ -741,6 +741,90 @@ const HomePage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Desktop Footer */}
+      {!selectedMainCategory && (
+        <footer className="hidden md:block bg-gray-900 text-white mt-20">
+          <div className="max-w-7xl mx-auto px-4 py-12">
+            <div className="grid md:grid-cols-4 gap-8 mb-8">
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-8 h-8 text-sky-400" />
+                  <h3 className="text-xl font-bold">intowns.in</h3>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">
+                  Premium home spa and massage services across India. Experience luxury wellness at your doorstep.
+                </p>
+                <div className="flex gap-3">
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-sky-600 transition-colors">
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-sky-600 transition-colors">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-sky-600 transition-colors">
+                    <Twitter className="w-5 h-5" />
+                  </a>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-4">Quick Links</h4>
+                <ul className="space-y-2 text-gray-400 text-sm">
+                  <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Services</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-4">Services</h4>
+                <ul className="space-y-2 text-gray-400 text-sm">
+                  <li><a href="#" className="hover:text-white transition-colors">Massage Therapy</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Spa Treatments</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Wellness Packages</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Therapy Sessions</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Gift Vouchers</a></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-4">Contact Us</h4>
+                <ul className="space-y-3 text-gray-400 text-sm">
+                  <li className="flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    <a href="mailto:admin@intowns.in" className="hover:text-white transition-colors">admin@intowns.in</a>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    <a href="tel:+919115503663" className="hover:text-white transition-colors">+91 91155 03663</a>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 mt-0.5" />
+                    <span>India</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+              <p>© 2025 Intowns.in. All rights reserved.</p>
+              <div className="flex gap-6">
+                <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+                <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
+              </div>
+            </div>
+          </div>
+        </footer>
+      )}
+
+      {/* PWA & Components */}
+      <PWAInstallPrompt />
+      <WhatsAppButton />
+      <CookieConsent />
     </div>
   );
 };
