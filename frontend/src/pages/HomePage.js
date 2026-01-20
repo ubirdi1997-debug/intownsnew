@@ -658,13 +658,31 @@ const HomePage = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">Address *</label>
-              <Textarea
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter your complete address"
-                rows={3}
-                data-testid="address-input"
-              />
+              <div className="relative">
+                <Textarea
+                  value={address}
+                  onChange={(e) => handleAddressChange(e.target.value)}
+                  onFocus={() => address.length >= 3 && setShowSuggestions(true)}
+                  placeholder="Start typing your address..."
+                  rows={3}
+                  data-testid="address-input"
+                />
+                {showSuggestions && addressSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {addressSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => selectAddress(suggestion)}
+                        className="w-full text-left px-4 py-2 hover:bg-sky-50 text-sm border-b border-gray-100 last:border-0"
+                      >
+                        {suggestion.description}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Start typing for suggestions</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
