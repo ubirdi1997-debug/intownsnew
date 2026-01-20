@@ -68,6 +68,12 @@ const AdminDashboard = () => {
     published: false
   });
 
+  const [emailForm, setEmailForm] = useState({
+    to_emails: '',
+    subject: '',
+    message: ''
+  });
+
   const [showCouponDialog, setShowCouponDialog] = useState(false);
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showBlogDialog, setShowBlogDialog] = useState(false);
