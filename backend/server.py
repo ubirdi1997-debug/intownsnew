@@ -354,6 +354,72 @@ async def get_wallet_config():
 
 # ============= Auth Routes =============
 
+@api_router.post("/auth/login")
+async def username_password_login(credentials: UsernamePasswordLogin):
+    """Simple username/password login for admin and employees"""
+    # Hardcoded credentials (in production, use hashed passwords in DB)
+    users_db = {
+        'admin': {
+            'password': 'pass',
+            'user_data': {
+                'id': 'admin-user-id',
+                'email': 'admin@intowns.in',
+                'name': 'Admin User',
+                'picture': 'https://ui-avatars.com/api/?name=Admin&background=0284c7&color=fff',
+                'role': 'admin',
+                'wallet_balance': 0,
+                'wallet_locked_balance': 0,
+                'created_at': datetime.now(timezone.utc).isoformat()
+            }
+        },
+        'rajni': {
+            'password': 'pass',
+            'user_data': {
+                'id': 'rajni-user-id',
+                'email': 'rajni@intowns.in',
+                'name': 'Rajni',
+                'picture': 'https://ui-avatars.com/api/?name=Rajni&background=10b981&color=fff',
+                'role': 'professional',
+                'wallet_balance': 0,
+                'wallet_locked_balance': 0,
+                'created_at': datetime.now(timezone.utc).isoformat()
+            }
+        }
+    }
+    
+    # Check credentials
+    if credentials.username not in users_db:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    
+    user_entry = users_db[credentials.username]
+    if credentials.password != user_entry['password']:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    
+    user_data = user_entry['user_data']
+    
+    # Check if user exists in DB, if not create
+    existing_user = await db.users.find_one({'email': user_data['email']}, {'_id': 0})
+    if not existing_user:
+        await db.users.insert_one(user_data)
+    else:
+        user_data = existing_user
+    
+    # Link professional if Rajni
+    if credentials.username == 'rajni':
+        professional = await db.professionals.find_one({'name': 'Rajni'}, {'_id': 0})
+        if professional and not professional.get('user_id'):
+            await db.professionals.update_one(
+                {'name': 'Rajni'},
+                {'$set': {
+                    'user_id': user_data['id'],
+                    'email': user_data['email']
+                }}
+            )
+    
+    jwt_token = create_jwt_token(user_data)
+    
+    return LoginResponse(token=jwt_token, user=User(**user_data))
+
 @api_router.get("/auth/google")
 async def google_login(request: Request):
     redirect_uri = request.url_for('google_callback')
