@@ -99,6 +99,32 @@ const HomePage = () => {
     }
   };
 
+  const searchAddress = async (query) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API_URL}/address/search?query=${encodeURIComponent(query)}`);
+      setAddressSuggestions(response.data);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Failed to search address:', error);
+    }
+  };
+
+  const handleAddressChange = (value) => {
+    setAddress(value);
+    searchAddress(value);
+  };
+
+  const selectAddress = (suggestion) => {
+    setAddress(suggestion.description);
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
+  };
+
   const handleMainCategoryClick = (category) => {
     setSelectedMainCategory(category);
     setSelectedSubCategory(null);
