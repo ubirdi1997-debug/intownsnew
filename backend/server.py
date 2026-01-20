@@ -608,6 +608,13 @@ async def google_callback(request: Request):
                     f"Welcome bonus of ₹{wallet_config.welcome_bonus_amount/100}",
                     None
                 )
+                
+                # Send welcome email
+                await send_welcome_email(
+                    user_data['email'],
+                    user_data['name'],
+                    wallet_config.welcome_bonus_amount
+                )
         
         jwt_token = create_jwt_token(user_data)
         
