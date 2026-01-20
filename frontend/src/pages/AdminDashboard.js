@@ -688,6 +688,156 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-4">
+            <h2 className="text-2xl font-bold">Users Management</h2>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-3">
+                  {users.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">No users found</p>
+                  ) : (
+                    users.map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center gap-4">
+                          <img 
+                            src={user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`} 
+                            alt={user.name}
+                            className="w-12 h-12 rounded-full"
+                          />
+                          <div>
+                            <p className="font-semibold">{user.name}</p>
+                            <p className="text-sm text-gray-600">{user.email}</p>
+                            <p className="text-xs text-gray-500">
+                              Wallet: ₹{((user.wallet_balance || 0) / 100).toFixed(0)} 
+                              {user.wallet_locked_balance > 0 && ` (+₹${(user.wallet_locked_balance / 100).toFixed(0)} locked)`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            user.role === 'admin' ? 'bg-red-100 text-red-800' :
+                            user.role === 'professional' ? 'bg-green-100 text-green-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {user.role}
+                          </span>
+                          <select
+                            value={user.role}
+                            onChange={(e) => updateUserRole(user.id, e.target.value)}
+                            className="border rounded px-3 py-1 text-sm"
+                          >
+                            <option value="user">User</option>
+                            <option value="professional">Professional</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Products Tab */}
+          <TabsContent value="products" className="space-y-4">
+            <h2 className="text-2xl font-bold">Products Management</h2>
+            <div className="grid gap-4">
+              {products.map((product) => (
+                <Card key={product.id}>
+                  <CardContent className="py-4">
+                    <div className="flex items-start gap-4">
+                      {product.image && (
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold text-lg">{product.name}</h3>
+                            {product.description && (
+                              <p className="text-sm text-gray-600">{product.description}</p>
+                            )}
+                          </div>
+                          <span className="text-xl font-bold text-sky-600">
+                            ₹{(product.price / 100).toFixed(0)}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 mt-2 text-xs">
+                          <span className="px-2 py-1 bg-sky-100 text-sky-800 rounded">
+                            {product.duration || 'N/A'}
+                          </span>
+                          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded">
+                            {product.type}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Bookings Tab */}
+          <TabsContent value="bookings" className="space-y-4">
+            <h2 className="text-2xl font-bold">All Bookings</h2>
+            <div className="grid gap-4">
+              {bookings.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center text-gray-500">
+                    No bookings yet
+                  </CardContent>
+                </Card>
+              ) : (
+                bookings.map((booking) => (
+                  <Card key={booking.id}>
+                    <CardContent className="py-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold">{booking.product?.name}</h3>
+                          <p className="text-sm text-gray-600">{booking.user?.name} • {booking.user?.email}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(booking.created_at).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xl font-bold text-sky-600">₹{booking.amount / 100}</p>
+                          <span className={`inline-block px-2 py-1 rounded text-xs font-semibold mt-1 ${
+                            booking.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            booking.status === 'in_progress' ? 'bg-orange-100 text-orange-800' :
+                            booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {booking.status.replace('_', ' ')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <p><strong>Address:</strong> {booking.address}</p>
+                        {booking.professional && (
+                          <p><strong>Professional:</strong> {booking.professional.name}</p>
+                        )}
+                        {booking.coupon_code && (
+                          <p className="text-green-600"><strong>Coupon:</strong> {booking.coupon_code} (-₹{booking.discount_amount / 100})</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
           {/* Blog Tab */}
           <TabsContent value="blog" className="space-y-4">
             <div className="flex justify-between items-center">
