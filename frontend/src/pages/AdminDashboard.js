@@ -894,19 +894,78 @@ const AdminDashboard = () => {
           </TabsContent>
 
           {/* Mailing Tab */}
-          <TabsContent value="mail" className="space-y-4">
-            <h2 className="text-2xl font-bold">Mailing System</h2>
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Mail className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-4">
-                  Configure Mailtrap credentials in the Config tab first
-                </p>
-                <p className="text-sm text-gray-500">
-                  Automated emails for welcome, orders, and notifications will be sent automatically
-                </p>
-              </CardContent>
-            </Card>
+          <TabsContent value="mail" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Send Email</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <Label>To Emails (comma separated)</Label>
+                    <Input
+                      value={emailForm.to_emails}
+                      onChange={(e) => setEmailForm({ ...emailForm, to_emails: e.target.value })}
+                      placeholder="user1@example.com, user2@example.com"
+                    />
+                  </div>
+                  <div>
+                    <Label>Subject</Label>
+                    <Input
+                      value={emailForm.subject}
+                      onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
+                      placeholder="Email subject"
+                    />
+                  </div>
+                  <div>
+                    <Label>Message</Label>
+                    <Textarea
+                      value={emailForm.message}
+                      onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })}
+                      rows={6}
+                      placeholder="Email message content"
+                    />
+                  </div>
+                  <Button onClick={sendEmail} disabled={loading}>
+                    {loading ? 'Sending...' : 'Send Email'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold mb-4">User Management</h2>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    {users.map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-semibold">{user.name}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                          <p className="text-xs text-gray-500">
+                            Joined: {new Date(user.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                            user.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {user.role}
+                          </span>
+                          <select
+                            value={user.role}
+                            onChange={(e) => updateUserRole(user.id, e.target.value)}
+                            className="border rounded px-2 py-1 text-sm"
+                          >
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </main>
