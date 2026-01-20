@@ -327,8 +327,141 @@ const HomePage = () => {
         </div>
       </header>
 
+      {/* Desktop Hero Section - Only for non-selected category */}
+      {!selectedMainCategory && (
+        <div className="hidden md:block relative overflow-hidden bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 text-white">
+          {/* Animated Background */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute w-96 h-96 bg-white/10 rounded-full -top-20 -left-20 animate-pulse"></div>
+            <div className="absolute w-72 h-72 bg-white/5 rounded-full top-40 right-20 animate-pulse delay-1000"></div>
+            <div className="absolute w-48 h-48 bg-white/10 rounded-full bottom-20 left-1/2 animate-pulse delay-500"></div>
+          </div>
+
+          <div className="relative max-w-7xl mx-auto px-4 py-20">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6 animate-fade-in">
+                <div className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
+                  ✨ Premium Wellness Services
+                </div>
+                <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                  Professional Spa & Massage
+                  <span className="block text-sky-200">At Your Doorstep</span>
+                </h1>
+                <p className="text-xl text-sky-100">
+                  Experience luxury spa treatments in the comfort of your home. 
+                  Expert therapists, premium products, guaranteed satisfaction.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <Button 
+                    size="lg" 
+                    className="bg-white text-sky-600 hover:bg-sky-50 rounded-full px-8"
+                    onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
+                    Book Now
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="border-white text-white hover:bg-white/10 rounded-full px-8"
+                  >
+                    Learn More
+                  </Button>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-6 pt-8">
+                  <div>
+                    <p className="text-3xl font-bold">500+</p>
+                    <p className="text-sky-200 text-sm">Happy Customers</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold">50+</p>
+                    <p className="text-sky-200 text-sm">Services</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold">4.9★</p>
+                    <p className="text-sky-200 text-sm">Average Rating</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative hidden lg:block animate-slide-in">
+                <div className="relative z-10">
+                  <img 
+                    src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&h=800&fit=crop" 
+                    alt="Spa"
+                    className="rounded-3xl shadow-2xl"
+                  />
+                </div>
+                <div className="absolute -bottom-6 -left-6 w-48 h-48 bg-white/20 backdrop-blur-lg rounded-3xl p-6 shadow-xl">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                      <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">4.9/5</p>
+                      <p className="text-sm text-sky-100">Rating</p>
+                    </div>
+                  </div>
+                  <p className="text-sm">Trusted by 500+ customers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Wave Divider */}
+          <div className="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="rgb(248 250 252)"/>
+            </svg>
+          </div>
+        </div>
+      )}
+
+      {/* Features Section - Desktop Only */}
+      {!selectedMainCategory && (
+        <div className="hidden md:block py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Intowns?</h2>
+              <p className="text-gray-600">Experience the difference with our premium services</p>
+            </div>
+            <div className="grid md:grid-cols-4 gap-8">
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Shield className="w-8 h-8 text-sky-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">100% Safe</h3>
+                <p className="text-sm text-gray-600">Verified professionals with background checks</p>
+              </div>
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Heart className="w-8 h-8 text-sky-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Premium Quality</h3>
+                <p className="text-sm text-gray-600">Top-grade products and expert therapists</p>
+              </div>
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Zap className="w-8 h-8 text-sky-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Quick Booking</h3>
+                <p className="text-sm text-gray-600">Book in minutes, service at your time</p>
+              </div>
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Star className="w-8 h-8 text-sky-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Best Rated</h3>
+                <p className="text-sm text-gray-600">4.9/5 rating from 500+ customers</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8" id="categories">
         {/* Step 1: Main Categories (4 Tiles) */}
         {!selectedMainCategory && (
           <div className="space-y-6">
