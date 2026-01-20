@@ -1116,6 +1116,43 @@ async def get_all_public_config():
     
     return public_configs
 
+# ============= Address Autocomplete (Open Source) =============
+
+@api_router.get("/address/search")
+async def search_address(query: str):
+    """
+    Simple address search using Nominatim (OpenStreetMap)
+    No API key needed - open source!
+    """
+    import urllib.parse
+    import aiohttp
+    
+    if not query or len(query) < 3:
+        return []
+    
+    try:
+        encoded_query = urllib.parse.quote(query)
+        url = f"https://nominatim.openstreetmap.org/search?q={encoded_query}&format=json&addressdetails=1&limit=5&countrycodes=in"
+        
+        async with aiohttp.ClientSession() as session:
+            headers = {'User-Agent': 'Intowns-App/1.0'}
+            async with session.get(url, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    suggestions = []
+                    for item in data:
+                        suggestions.append({
+                            'description': item.get('display_name', ''),
+                            'place_id': item.get('place_id', ''),
+                            'lat': item.get('lat', ''),
+                            'lon': item.get('lon', '')
+                        })
+                    return suggestions
+                return []
+    except Exception as e:
+        logger.error(f"Address search error: {str(e)}")
+        return []
+
 # ============= Admin Stats =============
 
 @api_router.get("/admin/stats", dependencies=[Depends(require_admin)])
