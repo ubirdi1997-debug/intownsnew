@@ -186,6 +186,10 @@ class SiteConfig(BaseModel):
 
 # ============= Input Models =============
 
+class UsernamePasswordLogin(BaseModel):
+    username: str
+    password: str
+
 class LoginResponse(BaseModel):
     token: str
     user: User
