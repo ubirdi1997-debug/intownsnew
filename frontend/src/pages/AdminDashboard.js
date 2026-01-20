@@ -861,45 +861,332 @@ const AdminDashboard = () => {
 
           {/* Products Tab */}
           <TabsContent value="products" className="space-y-4">
-            <h2 className="text-2xl font-bold">Products Management</h2>
-            <div className="grid gap-4">
-              {products.map((product) => (
-                <Card key={product.id}>
-                  <CardContent className="py-4">
-                    <div className="flex items-start gap-4">
-                      {product.image && (
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="w-20 h-20 rounded-lg object-cover"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold text-lg">{product.name}</h3>
-                            {product.description && (
-                              <p className="text-sm text-gray-600">{product.description}</p>
-                            )}
-                          </div>
-                          <span className="text-xl font-bold text-sky-600">
-                            ₹{(product.price / 100).toFixed(0)}
-                          </span>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Products & Categories Management</h2>
+              <div className="flex gap-2">
+                <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Category
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Create New Category</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Category Type *</Label>
+                        <select
+                          value={categoryForm.level}
+                          onChange={(e) => {
+                            const level = parseInt(e.target.value);
+                            setCategoryForm({ ...categoryForm, level, parent_id: level === 1 ? '' : categoryForm.parent_id });
+                          }}
+                          className="w-full border rounded-lg px-3 py-2"
+                        >
+                          <option value={1}>Main Category (Level 1)</option>
+                          <option value={2}>Sub-Category (Level 2)</option>
+                        </select>
+                      </div>
+
+                      {categoryForm.level === 2 && (
+                        <div>
+                          <Label>Parent Category *</Label>
+                          <select
+                            value={categoryForm.parent_id}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, parent_id: e.target.value })}
+                            className="w-full border rounded-lg px-3 py-2"
+                          >
+                            <option value="">Select Parent Category</option>
+                            {categories.filter(c => c.level === 1).map((cat) => (
+                              <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                          </select>
                         </div>
-                        <div className="flex gap-2 mt-2 text-xs">
-                          <span className="px-2 py-1 bg-sky-100 text-sky-800 rounded">
-                            {product.duration || 'N/A'}
-                          </span>
-                          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded">
-                            {product.type}
-                          </span>
+                      )}
+
+                      <div>
+                        <Label>Category Name *</Label>
+                        <Input
+                          value={categoryForm.name}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                          placeholder="e.g., Massage, Swedish Massage"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>Description</Label>
+                        <Textarea
+                          value={categoryForm.description}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                          placeholder="Optional description"
+                          rows={2}
+                        />
+                      </div>
+
+                      <div>
+                        <Label>Image URL</Label>
+                        <Input
+                          value={categoryForm.image}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, image: e.target.value })}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+
+                      <Button onClick={createCategory} disabled={loading} className="w-full">
+                        {loading ? 'Creating...' : 'Create Category'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Product
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Create New Product</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Product Name *</Label>
+                        <Input
+                          value={productForm.name}
+                          onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                          placeholder="e.g., Full Body Massage (60 min)"
+                        />
+                      </div>
+
+                      <div>
+                        <Label>Description</Label>
+                        <Textarea
+                          value={productForm.description}
+                          onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                          placeholder="Product description"
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Price (₹) *</Label>
+                          <Input
+                            type="number"
+                            value={productForm.price}
+                            onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                            placeholder="499"
+                          />
+                        </div>
+                        <div>
+                          <Label>Duration</Label>
+                          <Input
+                            value={productForm.duration}
+                            onChange={(e) => setProductForm({ ...productForm, duration: e.target.value })}
+                            placeholder="60 min"
+                          />
                         </div>
                       </div>
+
+                      <div>
+                        <Label>Main Category *</Label>
+                        <select
+                          value={productForm.category_id}
+                          onChange={(e) => setProductForm({ ...productForm, category_id: e.target.value, sub_category_id: '' })}
+                          className="w-full border rounded-lg px-3 py-2"
+                        >
+                          <option value="">Select Main Category</option>
+                          {categories.filter(c => c.level === 1).map((cat) => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {productForm.category_id && (
+                        <div>
+                          <Label>Sub-Category (Optional)</Label>
+                          <select
+                            value={productForm.sub_category_id}
+                            onChange={(e) => setProductForm({ ...productForm, sub_category_id: e.target.value })}
+                            className="w-full border rounded-lg px-3 py-2"
+                          >
+                            <option value="">Select Sub-Category</option>
+                            {categories.filter(c => c.level === 2 && c.parent_id === productForm.category_id).map((cat) => (
+                              <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <div>
+                        <Label>Type *</Label>
+                        <select
+                          value={productForm.type}
+                          onChange={(e) => setProductForm({ ...productForm, type: e.target.value })}
+                          className="w-full border rounded-lg px-3 py-2"
+                        >
+                          <option value="product">Product</option>
+                          <option value="package">Package</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label>Image URL</Label>
+                        <Input
+                          value={productForm.image}
+                          onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+
+                      <Button onClick={createProduct} disabled={loading} className="w-full">
+                        {loading ? 'Creating...' : 'Create Product'}
+                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
+
+            {/* Categories Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Categories</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Main Categories */}
+                  <div>
+                    <h3 className="font-semibold mb-2">Main Categories (Level 1)</h3>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {categories.filter(c => c.level === 1).map((cat) => (
+                        <div key={cat.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            {cat.image && (
+                              <img src={cat.image} alt={cat.name} className="w-12 h-12 rounded object-cover" />
+                            )}
+                            <div>
+                              <p className="font-semibold">{cat.name}</p>
+                              <p className="text-xs text-gray-500">
+                                {categories.filter(c => c.parent_id === cat.id).length} sub-categories
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteCategory(cat.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sub-Categories */}
+                  <div>
+                    <h3 className="font-semibold mb-2">Sub-Categories (Level 2)</h3>
+                    <div className="space-y-2">
+                      {categories.filter(c => c.level === 1).map((mainCat) => {
+                        const subs = categories.filter(c => c.level === 2 && c.parent_id === mainCat.id);
+                        if (subs.length === 0) return null;
+                        return (
+                          <div key={mainCat.id} className="border rounded-lg p-3">
+                            <p className="text-sm font-semibold text-gray-700 mb-2">{mainCat.name}:</p>
+                            <div className="grid md:grid-cols-3 gap-2">
+                              {subs.map((sub) => (
+                                <div key={sub.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                  <span className="text-sm">{sub.name}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => deleteCategory(sub.id)}
+                                  >
+                                    <Trash2 className="w-3 h-3 text-red-600" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Products List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>All Products</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  {products.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">No products yet. Add one above!</p>
+                  ) : (
+                    products.map((product) => (
+                      <div key={product.id} className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50">
+                        {product.image && (
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-20 h-20 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold text-lg">{product.name}</h3>
+                              {product.description && (
+                                <p className="text-sm text-gray-600">{product.description}</p>
+                              )}
+                              <div className="flex gap-2 mt-2 text-xs">
+                                <span className="px-2 py-1 bg-sky-100 text-sky-800 rounded">
+                                  {product.duration || 'N/A'}
+                                </span>
+                                <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded">
+                                  {product.type}
+                                </span>
+                                <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded">
+                                  {categories.find(c => c.id === product.category_id)?.name || 'N/A'}
+                                </span>
+                                {product.sub_category_id && (
+                                  <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded">
+                                    {categories.find(c => c.id === product.sub_category_id)?.name}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right flex items-center gap-2">
+                              <div>
+                                <p className="text-xl font-bold text-sky-600">
+                                  ₹{(product.price / 100).toFixed(0)}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteProduct(product.id)}
+                              >
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Bookings Tab */}
