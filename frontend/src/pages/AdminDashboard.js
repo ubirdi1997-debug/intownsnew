@@ -77,6 +77,8 @@ const AdminDashboard = () => {
   const [showCouponDialog, setShowCouponDialog] = useState(false);
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showBlogDialog, setShowBlogDialog] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [showProductDialog, setShowProductDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const { user } = useAuth();
