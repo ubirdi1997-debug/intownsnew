@@ -1459,78 +1459,150 @@ const AdminDashboard = () => {
           </TabsContent>
 
           {/* Mailing Tab */}
-          <TabsContent value="mail" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Send Email</h2>
-              <Card>
-                <CardContent className="pt-6 space-y-4">
-                  <div>
-                    <Label>To Emails (comma separated)</Label>
-                    <Input
-                      value={emailForm.to_emails}
-                      onChange={(e) => setEmailForm({ ...emailForm, to_emails: e.target.value })}
-                      placeholder="user1@example.com, user2@example.com"
-                    />
-                  </div>
-                  <div>
-                    <Label>Subject</Label>
-                    <Input
-                      value={emailForm.subject}
-                      onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
-                      placeholder="Email subject"
-                    />
-                  </div>
-                  <div>
-                    <Label>Message</Label>
-                    <Textarea
-                      value={emailForm.message}
-                      onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })}
-                      rows={6}
-                      placeholder="Email message content"
-                    />
-                  </div>
-                  <Button onClick={sendEmail} disabled={loading}>
-                    {loading ? 'Sending...' : 'Send Email'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="mail" className="space-y-4">
+            <h2 className="text-2xl font-bold">Mailing System</h2>
+            
+            {/* Email Stats */}
+            {emailStats && (
+              <div className="grid md:grid-cols-5 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-gray-600">Total Sent</p>
+                    <p className="text-3xl font-bold text-green-600">{emailStats.total_sent}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-gray-600">Welcome Emails</p>
+                    <p className="text-3xl font-bold">{emailStats.by_type.welcome}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-gray-600">Order Confirmations</p>
+                    <p className="text-3xl font-bold">{emailStats.by_type.order_success}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-gray-600">Topup Notifications</p>
+                    <p className="text-3xl font-bold">{emailStats.by_type.topup}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-gray-600">Manual Emails</p>
+                    <p className="text-3xl font-bold">{emailStats.by_type.manual}</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
-            <div>
-              <h2 className="text-2xl font-bold mb-4">User Management</h2>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    {users.map((user) => (
-                      <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <p className="font-semibold">{user.name}</p>
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                          <p className="text-xs text-gray-500">
-                            Joined: {new Date(user.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            user.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {user.role}
-                          </span>
-                          <select
-                            value={user.role}
-                            onChange={(e) => updateUserRole(user.id, e.target.value)}
-                            className="border rounded px-2 py-1 text-sm"
-                          >
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
-                          </select>
+            {/* Send Email Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Send Email</CardTitle>
+                <CardDescription>Send email to one or multiple recipients (comma-separated)</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>To (Email Addresses) *</Label>
+                  <Input
+                    value={emailForm.to_emails}
+                    onChange={(e) => setEmailForm({ ...emailForm, to_emails: e.target.value })}
+                    placeholder="user1@example.com, user2@example.com"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate multiple emails with commas</p>
+                </div>
+
+                <div>
+                  <Label>Subject *</Label>
+                  <Input
+                    value={emailForm.subject}
+                    onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
+                    placeholder="Email subject"
+                  />
+                </div>
+
+                <div>
+                  <Label>Message *</Label>
+                  <Textarea
+                    value={emailForm.message}
+                    onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })}
+                    rows={8}
+                    placeholder="Email message"
+                  />
+                </div>
+
+                <Button onClick={sendEmail} disabled={loading}>
+                  {loading ? 'Sending...' : 'Send Email'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Email Logs */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Email Activity</CardTitle>
+                <CardDescription>Last 50 emails sent</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {emailLogs.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">No emails sent yet</p>
+                  ) : (
+                    emailLogs.map((log) => (
+                      <div key={log.id} className="p-3 border rounded-lg hover:bg-gray-50">
+                        <div className="flex items-start justify-between mb-1">
+                          <div className="flex-1">
+                            <p className="font-semibold">{log.subject}</p>
+                            <p className="text-sm text-gray-600">To: {log.to_email}</p>
+                            {log.cc_email && (
+                              <p className="text-sm text-gray-600">CC: {log.cc_email}</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                              log.type === 'welcome' ? 'bg-green-100 text-green-800' :
+                              log.type === 'order_success' ? 'bg-blue-100 text-blue-800' :
+                              log.type === 'order_notification' ? 'bg-purple-100 text-purple-800' :
+                              log.type === 'topup' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {log.type.replace('_', ' ')}
+                            </span>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(log.created_at).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Automated Emails Info */}
+            <Card className="bg-sky-50 border-sky-200">
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-2">✅ Automated Emails (Active)</h3>
+                <ul className="text-sm space-y-1 text-gray-700">
+                  <li>• <strong>Welcome Email:</strong> Sent when new user signs up (includes ₹100 bonus info)</li>
+                  <li>• <strong>Wallet Topup:</strong> Sent after successful wallet recharge (with cashback details)</li>
+                  <li>• <strong>Order Success:</strong> Sent to customer after booking confirmation</li>
+                  <li>• <strong>New Order Alert:</strong> Sent to admin@intowns.in (CC: admin@usafe.in) for new bookings</li>
+                </ul>
+                <p className="text-sm text-gray-600 mt-3">
+                  <strong>Note:</strong> Configure Mailtrap API in Config tab to send actual emails. Currently emails are logged to database and console.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>
