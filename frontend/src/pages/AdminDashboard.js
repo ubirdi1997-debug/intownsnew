@@ -74,6 +74,9 @@ const AdminDashboard = () => {
     message: ''
   });
 
+  const [emailLogs, setEmailLogs] = useState([]);
+  const [emailStats, setEmailStats] = useState(null);
+
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     image: '',
