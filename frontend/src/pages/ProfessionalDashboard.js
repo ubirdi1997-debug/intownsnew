@@ -327,6 +327,10 @@ const ProfessionalDashboard = () => {
                               year: 'numeric'
                             })}
                           </p>
+                          <p className="text-xs text-gray-500">
+                            Payment: {booking.payment_method === 'cod' ? 'Cash on Delivery' : 'Online'} 
+                            {booking.payment_id ? ' ✓' : booking.payment_method === 'cod' ? ' (Pending)' : ''}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">

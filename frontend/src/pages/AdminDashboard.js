@@ -1449,8 +1449,8 @@ const AdminDashboard = () => {
                 <div>
                   <Label>WhatsApp Support Number</Label>
                   <Input
-                    placeholder="+919115503663"
-                    defaultValue="+919115503663"
+                    placeholder="+919115535739"
+                    defaultValue="+919115535739"
                     onBlur={(e) => updateSiteConfig('whatsapp_number', e.target.value)}
                   />
                 </div>

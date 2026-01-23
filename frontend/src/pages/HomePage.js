@@ -41,8 +41,11 @@ const HomePage = () => {
   const [walletInfo, setWalletInfo] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [showWomenOnlyDialog, setShowWomenOnlyDialog] = useState(false);
+  const [siteConfig, setSiteConfig] = useState(null);
   
   const [loading, setLoading] = useState(false);
+  const [categoryLoading, setCategoryLoading] = useState(null);
+  const [productLoading, setProductLoading] = useState(null);
   const { user, login, logout } = useAuth();
   const navigate = useNavigate();
   const { Razorpay } = useRazorpay();
@@ -57,6 +60,7 @@ const HomePage = () => {
     }
     
     fetchMainCategories();
+    fetchSiteConfig();
     if (user) {
       fetchWalletInfo();
     }
@@ -69,12 +73,28 @@ const HomePage = () => {
     }
   }, [products]);
 
+  useEffect(() => {
+    // Set default payment method based on Razorpay availability
+    if (siteConfig) {
+      setPaymentMethod(siteConfig.razorpay_enabled ? 'online' : 'cod');
+    }
+  }, [siteConfig]);
+
   const fetchMainCategories = async () => {
     try {
       const response = await axios.get(`${API_URL}/categories?level=1`);
       setMainCategories(response.data);
     } catch (error) {
       console.error('Failed to fetch main categories:', error);
+    }
+  };
+
+  const fetchSiteConfig = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/config`);
+      setSiteConfig(response.data);
+    } catch (error) {
+      console.error('Failed to fetch site config:', error);
     }
   };
 
@@ -134,17 +154,21 @@ const HomePage = () => {
     setShowSuggestions(false);
   };
 
-  const handleMainCategoryClick = (category) => {
+  const handleMainCategoryClick = async (category) => {
+    setCategoryLoading(category.id);
     setSelectedMainCategory(category);
     setSelectedSubCategory(null);
     setProducts([]);
-    fetchSubCategories(category.id);
+    await fetchSubCategories(category.id);
+    setCategoryLoading(null);
   };
 
-  const handleSubCategoryClick = (subCategory) => {
+  const handleSubCategoryClick = async (subCategory) => {
+    setProductLoading(subCategory.id);
     setSelectedSubCategory(subCategory);
-    fetchProducts(subCategory.id);
+    await fetchProducts(subCategory.id);
     setFilter('all');
+    setProductLoading(null);
   };
 
   const handleBackFromSubCategory = () => {
@@ -517,7 +541,8 @@ const HomePage = () => {
                 <button
                   key={category.id}
                   onClick={() => handleMainCategoryClick(category)}
-                  className="group relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                  disabled={categoryLoading === category.id}
+                  className="group relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid={`main-category-${category.name.toLowerCase()}`}
                 >
                   <img
@@ -553,7 +578,8 @@ const HomePage = () => {
                 <button
                   key={subCat.id}
                   onClick={() => handleSubCategoryClick(subCat)}
-                  className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  disabled={productLoading === subCat.id}
+                  className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid={`sub-category-${subCat.name.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <img
@@ -764,19 +790,21 @@ const HomePage = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">Payment Method</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('online')}
-                  className={`p-3 border rounded-lg text-center transition-colors ${
-                    paymentMethod === 'online'
-                      ? 'border-sky-500 bg-sky-50 text-sky-700'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="font-medium">Online Payment</div>
-                  <div className="text-xs text-gray-500">Pay now securely</div>
-                </button>
+              <div className={`grid gap-3 ${siteConfig?.razorpay_enabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {siteConfig?.razorpay_enabled && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('online')}
+                    className={`p-3 border rounded-lg text-center transition-colors ${
+                      paymentMethod === 'online'
+                        ? 'border-sky-500 bg-sky-50 text-sky-700'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="font-medium">Online Payment</div>
+                    <div className="text-xs text-gray-500">Pay now securely</div>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('cod')}
@@ -885,7 +913,7 @@ const HomePage = () => {
                   </li>
                   <li className="flex items-center gap-2">
                     <Phone className="w-4 h-4" />
-                    <a href="tel:+919115503663" className="hover:text-white transition-colors">+91 91155 03663</a>
+                    <a href="tel:+919115535739" className="hover:text-white transition-colors">+91 91155 35739</a>
                   </li>
                   <li className="flex items-start gap-2">
                     <MapPin className="w-4 h-4 mt-0.5" />

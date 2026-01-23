@@ -308,7 +308,7 @@ Full-stack PWA web application for booking home spa and massage services in Indi
 - Push notification permission flow
 - Light animations
 - WhatsApp support:
-  - Logged-in users: Floating button (+9115503663)
+  - Logged-in users: Floating button (+9115535739)
   - Non-logged: Show after 2 minutes with "Need help?" prompt
 
 ## PWA Configuration
@@ -339,7 +339,7 @@ RAZORPAY_KEY_SECRET=secret
 MAILTRAP_API_TOKEN=token
 MAILTRAP_SENDER_EMAIL=admin@intowns.in
 GOOGLE_MAPS_API_KEY=key
-WHATSAPP_NUMBER=+919115503663
+WHATSAPP_NUMBER=+919115535739
 ```
 
 ### Frontend (.env)

@@ -457,9 +457,10 @@ Intowns.in Team
     """
     await send_system_email(user_email, subject, message, email_type="topup")
 
-async def send_order_success_email(user_email: str, user_name: str, booking_id: str, product_name: str, amount: int, address: str):
+async def send_order_success_email(user_email: str, user_name: str, booking_id: str, product_name: str, cart_value: str, discount: str, wallet: str, final_amount: str, payment_method: str, address: str):
     """Send order success email to customer"""
     subject = f"Booking Confirmed - {product_name}"
+    payment_text = "Cash on Delivery" if payment_method == "cod" else "Online Payment"
     message = f"""
 Hi {user_name},
 
@@ -468,7 +469,11 @@ Your booking has been confirmed! 🎊
 Booking Details:
 - Booking ID: {booking_id[:8]}
 - Service: {product_name}
-- Amount Paid: ₹{amount/100}
+- Cart Value: ₹{cart_value}
+- Discount: ₹{discount}
+- Wallet Used: ₹{wallet}
+- Amount to Pay: ₹{final_amount}
+- Payment Method: {payment_text}
 - Location: {address}
 
 What's Next?
@@ -476,7 +481,7 @@ What's Next?
 ✓ Track your booking at: https://intowns.in/my-bookings
 ✓ Service will be delivered at your address
 
-Need help? WhatsApp us at +91 91155 03663
+Need help? WhatsApp us at +91 91155 35739
 
 Thank you for booking with Intowns.in!
 
@@ -1186,7 +1191,11 @@ async def verify_payment(req: VerifyPaymentRequest, user: dict = Depends(get_cur
         user['name'],
         req.booking_id,
         product['name'],
-        updated_booking['amount'],
+        f"₹{updated_booking['amount'] / 100}",
+        f"₹{updated_booking.get('discount_amount', 0) / 100}",
+        f"₹{updated_booking.get('wallet_used', 0) / 100}",
+        f"₹{max(0, updated_booking['amount'] - updated_booking.get('discount_amount', 0) - updated_booking.get('wallet_used', 0)) / 100}",
+        updated_booking.get('payment_method', 'online').upper(),
         updated_booking['address']
     )
     
@@ -1405,8 +1414,11 @@ async def get_all_public_config():
     if 'razorpay_key_id' not in public_configs:
         public_configs['razorpay_key_id'] = RAZORPAY_KEY_ID
     
+    # Add Razorpay enabled flag
+    public_configs['razorpay_enabled'] = RAZORPAY_KEY_ID != 'rzp_test_dummy' and RAZORPAY_KEY_SECRET != 'dummy_secret'
+    
     if 'whatsapp_number' not in public_configs:
-        public_configs['whatsapp_number'] = os.environ.get('WHATSAPP_NUMBER', '+919115503663')
+        public_configs['whatsapp_number'] = os.environ.get('WHATSAPP_NUMBER', '+919115535739')
     
     return public_configs
 

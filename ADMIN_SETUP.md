@@ -115,7 +115,7 @@ db.users.findOne({ email: "YOUR_EMAIL@gmail.com" })
 
 **Site Settings:**
 - Site Logo URL
-- WhatsApp Support Number (default: +919115503663)
+- WhatsApp Support Number (default: +919115535739)
 
 ### 5. Mailing Tab
 - Configure Mailtrap credentials

@@ -142,6 +142,10 @@ const UserBookings = () => {
                         <Clock className="w-4 h-4" />
                         <span>{booking.product?.duration || 'N/A'}</span>
                       </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Package className="w-4 h-4" />
+                        <span>{booking.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</span>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-start gap-2 text-gray-600">

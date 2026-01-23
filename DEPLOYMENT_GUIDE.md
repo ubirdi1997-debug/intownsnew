@@ -90,7 +90,7 @@ MAILTRAP_SENDER_EMAIL="admin@intowns.in"
 GOOGLE_MAPS_API_KEY=""
 
 # WhatsApp Support
-WHATSAPP_NUMBER="+919115503663"
+WHATSAPP_NUMBER="+919115535739"
 ```
 
 ### **Step 4: Seed Database**
