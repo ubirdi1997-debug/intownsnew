@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const WhatsAppButton = ({ phoneNumber = '+919115503663' }) => {
+const WhatsAppButton = ({ phoneNumber = '+919115535739' }) => {
   const [showPrompt, setShowPrompt] = useState(false);
   const { user } = useAuth();
 

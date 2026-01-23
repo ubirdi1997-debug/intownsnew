@@ -39,6 +39,8 @@ const HomePage = () => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [useWallet, setUseWallet] = useState(false);
   const [walletInfo, setWalletInfo] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('online');
+  const [showWomenOnlyDialog, setShowWomenOnlyDialog] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const { user, login, logout } = useAuth();
@@ -59,6 +61,13 @@ const HomePage = () => {
       fetchWalletInfo();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Show women-only service dialog when products are displayed
+    if (products.length > 0 && !localStorage.getItem('womenOnlyDialogShown')) {
+      setShowWomenOnlyDialog(true);
+    }
+  }, [products]);
 
   const fetchMainCategories = async () => {
     try {
@@ -208,20 +217,21 @@ const HomePage = () => {
           landmark: landmark,
           pincode: pincode,
           coupon_code: appliedCoupon ? couponCode : null,
-          use_wallet: useWallet
+          use_wallet: useWallet,
+          payment_method: paymentMethod
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const { razorpay_order_id, amount, key_id, booking_id } = response.data;
 
-      // If amount is 0 (fully paid by wallet), directly confirm
-      if (amount === 0) {
+      // If amount is 0 (fully paid by wallet) or COD, directly confirm
+      if (amount === 0 || paymentMethod === 'cod') {
         navigate('/booking-confirmation', { state: { booking_id } });
         return;
       }
 
-      // Initialize Razorpay
+      // Initialize Razorpay for online payment
       const options = {
         key: key_id,
         amount: amount,
@@ -752,6 +762,36 @@ const HomePage = () => {
               </div>
             )}
 
+            <div>
+              <label className="block text-sm font-medium mb-2">Payment Method</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('online')}
+                  className={`p-3 border rounded-lg text-center transition-colors ${
+                    paymentMethod === 'online'
+                      ? 'border-sky-500 bg-sky-50 text-sky-700'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="font-medium">Online Payment</div>
+                  <div className="text-xs text-gray-500">Pay now securely</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('cod')}
+                  className={`p-3 border rounded-lg text-center transition-colors ${
+                    paymentMethod === 'cod'
+                      ? 'border-sky-500 bg-sky-50 text-sky-700'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="font-medium">Cash on Delivery</div>
+                  <div className="text-xs text-gray-500">Pay after service</div>
+                </button>
+              </div>
+            </div>
+
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal</span>
@@ -782,7 +822,7 @@ const HomePage = () => {
               size="lg"
               data-testid="confirm-booking-btn"
             >
-              {loading ? 'Processing...' : 'Proceed to Payment'}
+              {loading ? 'Processing...' : paymentMethod === 'cod' ? 'Confirm Booking' : 'Proceed to Payment'}
             </Button>
           </div>
         </DialogContent>
@@ -871,6 +911,32 @@ const HomePage = () => {
       <PWAInstallPrompt />
       <WhatsAppButton />
       <CookieConsent />
+
+      {/* Women-Only Service Dialog */}
+      <Dialog open={showWomenOnlyDialog} onOpenChange={setShowWomenOnlyDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">Important Notice</DialogTitle>
+          </DialogHeader>
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto">
+              <Heart className="w-8 h-8 text-pink-600" />
+            </div>
+            <p className="text-gray-700 leading-relaxed">
+              This service is exclusively for women. If a man orders this service by impersonating a female, the order will be canceled and banned for life. We monitor our professionals working hours for their safety.
+            </p>
+            <Button
+              onClick={() => {
+                setShowWomenOnlyDialog(false);
+                localStorage.setItem('womenOnlyDialogShown', 'true');
+              }}
+              className="w-full"
+            >
+              I Understand
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -110,6 +110,7 @@ class Booking(BaseModel):
     landmark: Optional[str] = None
     pincode: Optional[str] = None
     status: str = "pending"  # pending, accepted, on_the_way, in_progress, completed, cancelled
+    payment_method: str = "online"  # online, cod
     payment_id: Optional[str] = None
     razorpay_order_id: Optional[str] = None
     razorpay_payment_id: Optional[str] = None
@@ -212,6 +213,7 @@ class CreateOrderRequest(BaseModel):
     pincode: Optional[str] = None
     coupon_code: Optional[str] = None
     use_wallet: bool = False
+    payment_method: str = "online"
 
 class VerifyPaymentRequest(BaseModel):
     razorpay_order_id: str
@@ -981,6 +983,7 @@ async def create_order(req: CreateOrderRequest, user: dict = Depends(get_current
         address=req.address,
         landmark=req.landmark,
         pincode=req.pincode,
+        payment_method=req.payment_method,
         amount=cart_value,
         wallet_used=wallet_used,
         coupon_code=req.coupon_code,
@@ -988,8 +991,8 @@ async def create_order(req: CreateOrderRequest, user: dict = Depends(get_current
         status='pending'
     )
     
-    # If payment required, create Razorpay order
-    if final_amount > 0:
+    # If payment required and method is online, create Razorpay order
+    if final_amount > 0 and req.payment_method == 'online':
         razorpay_order = razorpay_client.order.create({
             'amount': final_amount,
             'currency': 'INR',
@@ -1000,6 +1003,90 @@ async def create_order(req: CreateOrderRequest, user: dict = Depends(get_current
     booking_dict = booking.model_dump()
     booking_dict['created_at'] = booking_dict['created_at'].isoformat()
     await db.bookings.insert_one(booking_dict)
+    
+    # For COD or zero amount, auto-accept the booking
+    if req.payment_method == 'cod' or final_amount == 0:
+        # Auto-assign professional
+        professionals = await db.professionals.find({'status': 'active'}, {'_id': 0}).to_list(100)
+        professional_id = professionals[0]['id'] if professionals else None
+        
+        await db.bookings.update_one(
+            {'id': booking.id},
+            {'$set': {
+                'status': 'accepted',
+                'professional_id': professional_id
+            }}
+        )
+        
+        # Deduct wallet if used
+        if wallet_used > 0:
+            wallet_config = await get_wallet_config()
+            locked_used = 0
+            regular_used = 0
+            
+            user_locked = user.get('wallet_locked_balance', 0)
+            
+            # Calculate how much came from locked balance
+            if user_locked > 0:
+                locked_used = min(
+                    user_locked,
+                    wallet_config.welcome_bonus_max_deduction,
+                    wallet_used
+                )
+            
+            regular_used = wallet_used - locked_used
+            
+            # Update user wallet
+            update_data = {}
+            if locked_used > 0:
+                update_data['wallet_locked_balance'] = user.get('wallet_locked_balance', 0) - locked_used
+            if regular_used > 0:
+                update_data['wallet_balance'] = user.get('wallet_balance', 0) - regular_used
+            
+            if update_data:
+                await db.users.update_one({'id': user['id']}, {'$set': update_data})
+            
+            # Add transaction
+            await add_wallet_transaction(
+                user['id'],
+                'debit',
+                -wallet_used,
+                f"Used for booking #{booking.id[:8]}",
+                booking.id
+            )
+        
+        # Update coupon usage
+        if req.coupon_code:
+            await db.coupons.update_one(
+                {'code': req.coupon_code},
+                {'$inc': {'used_count': 1}}
+            )
+        
+        # Get booking details for email
+        product = await db.products.find_one({'id': booking.product_id}, {'_id': 0})
+        
+        # Send order success email to customer
+        await send_order_success_email(
+            user['email'],
+            user['name'],
+            booking.id,
+            product['name'],
+            f"₹{cart_value / 100}",
+            f"₹{discount_amount / 100}",
+            f"₹{wallet_used / 100}",
+            f"₹{final_amount / 100}",
+            req.payment_method.upper(),
+            req.address
+        )
+        
+        return {
+            'booking_id': booking.id,
+            'amount': final_amount,
+            'key_id': None,
+            'cart_value': cart_value,
+            'discount_amount': discount_amount,
+            'wallet_used': wallet_used
+        }
     
     return {
         'booking_id': booking.id,
@@ -1170,9 +1257,13 @@ async def update_booking_status(
     if req.status == 'in_progress' and not booking.get('started_at'):
         update_data['started_at'] = datetime.now(timezone.utc).isoformat()
     
-    # Track completion time
+    # Track completion time and record COD payment
     if req.status == 'completed' and not booking.get('completed_at'):
         update_data['completed_at'] = datetime.now(timezone.utc).isoformat()
+        
+        # For COD bookings, record payment when completed
+        if booking.get('payment_method') == 'cod' and not booking.get('payment_id'):
+            update_data['payment_id'] = f"cod_{booking_id}_{int(datetime.now(timezone.utc).timestamp())}"
     
     await db.bookings.update_one(
         {'id': booking_id},
