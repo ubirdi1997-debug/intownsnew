@@ -61,9 +61,6 @@ async def seed_data():
     await db.categories.insert_many(main_categories)
     print(f"Created {len(main_categories)} main categories")
     
-    await db.categories.insert_many(main_categories)
-    print(f"Created {len(main_categories)} main categories")
-    
     massage_cat = main_categories[0]['id']
     therapy_cat = main_categories[1]['id']
     bridal_cat = main_categories[2]['id']
